@@ -2,6 +2,16 @@ version: "3.0"
 
 stories:
 
+- story: user supplies customer info
+  steps:
+  - intent: greet
+  - action: utter_ask_for_contact_info
+  - intent: supply_contact_info
+    entities:
+    - name
+    - email
+  - action: utter_acknowledge_provided_info
+
 - story: happy path
   steps:
   - intent: greet
@@ -29,12 +39,34 @@ stories:
   - intent: deny
   - action: utter_goodbye
 
-- story: user supplies customer info
+- story: interactive_story_1
   steps:
   - intent: greet
-  - action: utter_ask_for_contact_info
-  - intent: supply_contact_info
+  - action: utter_greet
+  - intent: inquire_time
     entities:
-    - name
-    - email
-  - action: utter_acknowledge_provided_info
+    - place: amsterdam
+  - action: action_tell_time
+
+- story: interactive_story_1
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: where_i_live
+    entities:
+    - place: london
+  - action: action_remember_where
+  - slot_was_set:
+    - location: london
+  - intent: inquire_time_difference
+    entities:
+    - place: amsterdam
+  - action: action_time_difference
+  - intent: inquire_time_difference
+    entities:
+    - place: amsterdam
+  - action: action_time_difference
+  - intent: inquire_time_difference
+    entities:
+    - place: amsterdam
+  - action: action_time_difference

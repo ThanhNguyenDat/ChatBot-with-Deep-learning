@@ -1,8 +1,12 @@
 version: "3.0"
 
+
 intents:
   - greet
+  - inquire_time
+  - inquire_time_difference
   - supply_contact_info
+  - where_i_live
   - goodbye
   - affirm
   - deny
@@ -13,6 +17,7 @@ intents:
 entities:
   - name
   - email
+  - place
 
 slots:
   name:
@@ -25,6 +30,12 @@ slots:
     mappings:
       - type: from_entity
         entity: email
+  place:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: place
 
 responses:
   utter_greet:
@@ -52,9 +63,15 @@ responses:
   utter_acknowledge_provided_info:
   - text: "Thanks {name} for provided your info!"
 
+actions:
+  - action_summarize_information
+  - action_remember_where
+  - action_tell_time
+  - action_time_difference
+  - utter_greet
+  - action_pix
+
 session_config:
   session_expiration_time: 60
   carry_over_slots_to_new_session: true
 
-action:
-  - action_pix
