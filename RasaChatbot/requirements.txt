@@ -3,8 +3,13 @@ sanic==21.6.1
 sanic-routing==0.7.2
 arrow~=1.2.1
 dateparser~=1.1.0
-mtcnn
-flask
-opencv-python-headless
-imutils
+mtcnn~=0.1.1
+flask~=2.0.2
+flask-cors
+opencv-python-headless==4.1.2.30
+imutils~=0.5.4
 keras==2.6.*
+dlib~=19.22.1
+numpy~=1.19.5
+sklearn~=0.0
+scikit-learn~=0.24.2

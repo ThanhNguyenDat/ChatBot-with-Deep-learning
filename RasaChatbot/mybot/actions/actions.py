@@ -1,16 +1,35 @@
 from typing import Any, Text, Dict, List
 
-import arrow
-import dateparser
 from rasa_sdk import Action, Tracker
 from rasa_sdk.events import SlotSet
 from rasa_sdk.executor import CollectingDispatcher
 
 import pickle
+from mtcnn import MTCNN
+import arrow
+import dateparser
+import dlib
+from imutils import face_utils
+import cv2
+import numpy as np
+import sys
+import os
 
 # load model
-file_name = ""
+file_name = "../face_models/model.sav"
 clf = pickle.load(open(file_name, 'rb'))
+
+desc_file = "../face_models/face_desc.csv"
+f = open(desc_file, "r")
+desc = f.readlines()
+f.close()
+dict = {}
+for line in desc:
+    dict[line.split('|')[0]] = [line.split('|')[1], line.split("|")[2], line.split("|")[3]]
+
+detector = MTCNN()
+predictor = dlib.shape_predictor("../face_models/shape_predictor_68_face_landmarks.dat")
+
 
 city_db = {
     'brussels': 'Europe/Brussels',
@@ -19,7 +38,9 @@ city_db = {
     'lisbon': 'Europe/Lisbon',
     'amsterdam': 'Europe/Amsterdam',
     'seattle': 'US/Pacific',
-    'vietnam': 'Asia/Vietnam'
+    'newyork': 'America/New_York',
+    'hochiminh': 'Vietnam/Ho_Chi_Minh'
+
 }
 
 
@@ -121,29 +142,56 @@ class ActionTimeDifference(Action):
 class ActionPix(Action):
 
     def name(self) -> Text:
-        return 'action_pix'
+        return "action_pix"
 
     def run(self, dispatcher: CollectingDispatcher,
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 
-        # Get url
+        # Xu ly hinh anh/nhan dien qua model
         image_url = tracker.latest_message["text"]
         if not image_url.startswith("http"):
-            msg = "Please send face photo to get recommendation!"
-            dispatcher.utter_message(text=msg)
+            dispatcher.utter_message(text="Please send face photo to get recommendation!")
             return []
 
-        # Save image from url
+
+        # Luu hinh anh tu url ve
         import urllib.request
         import numpy as np
         import cv2
-
         resource = urllib.request.urlopen(image_url)
         image = np.asarray(bytearray(resource.read()), dtype="uint8")
         frame = cv2.imdecode(image, cv2.IMREAD_COLOR)
 
-        # Recogniztion
-        msg = "Dang xu ly anh"
-        dispatcher.utter_message(text=msg)
+        # Nhan dien qua model de lay hinh dang khuon mat
+        results = detector.detect_faces(frame)
+
+        if len(results) != 0:
+            for result in results:
+                x1, y1, width, height = result['box']
+
+                x1, y1 = abs(x1), abs(y1)
+                x2, y2 = x1 + width, y1 + height
+
+                # Extract dlib
+                landmark = predictor(frame, dlib.rectangle(x1, y1, x2, y2))
+                landmark = face_utils.shape_to_np(landmark)
+
+                print("O", landmark.shape)
+                landmark = landmark.reshape(68 * 2)
+                print("R", landmark.shape)
+
+                # Co ket qua du doan
+                y_pred = clf.predict([landmark])
+                print(y_pred)
+
+                face_desc = dict[y_pred[0]][1]
+                face_shape = dict[y_pred[0]][0]
+                face_image = dict[y_pred[0]][2]
+
+                dispatcher.utter_message(
+                    text="Bạn có khuôn {}.\nCách chọn kình phù hợp: {}".format(face_shape.upper(), face_desc),
+                    image=face_image)
+                dispatcher.utter_message(text="Please send face photo to get recommendation!")
+
         return []

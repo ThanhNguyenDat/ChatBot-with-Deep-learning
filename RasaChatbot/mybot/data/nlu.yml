@@ -114,6 +114,8 @@ nlu:
     - lisbon
     - amsterdam
     - seattle
+    - vietnam
+    - hochiminh
 
 - intent: where_i_live
   examples: |
