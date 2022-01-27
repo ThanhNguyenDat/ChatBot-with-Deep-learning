@@ -150,12 +150,18 @@ class ActionPix(Action):
 
         # Xu ly hinh anh/nhan dien qua model
         image_url = tracker.latest_message["text"]
+        print('----------------------------------------------------------------')
+        print(image_url)
+        print('----------------------------------------------------------------')
+        print(tracker.latest_message)
+
+        if image_url is not None:
+            image_url
         if not image_url.startswith("http"):
             dispatcher.utter_message(text="Please send face photo to get recommendation!")
             return []
 
-
-        # Luu hinh anh tu url ve
+        # Save image from url
         import urllib.request
         import numpy as np
         import cv2

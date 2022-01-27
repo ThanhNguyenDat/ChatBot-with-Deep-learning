@@ -10,9 +10,9 @@ class MyItem(BaseModel):
 
 app = FastAPI()
 
-
 @app.get("/")
 async def home():
+
     return "Home ne"
 
 @app.post("/submit")
